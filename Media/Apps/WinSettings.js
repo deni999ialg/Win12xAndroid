@@ -1,81 +1,62 @@
+/* =========================================================
+   SETTINGS PAGE DEFINITIONS
+========================================================= */
+
 const pages = {
-    "System": {
+    system: {
+        name: "System",
         cards: ["Display", "Sound", "Notifications", "Storage", "Multitasking", "About"]
     },
-    "Bluetooth & Devices": {
+    devices: {
+        name: "Bluetooth & Devices",
         cards: ["Bluetooth", "Printers", "Mouse", "Keyboard"]
     },
-    "Network & Internet": {
+    network: {
+        name: "Network & Internet",
         cards: ["Wi-Fi", "Ethernet", "VPN"]
     },
-    "Personalization": {
+    personalization: {
+        name: "Personalization",
         cards: ["Background", "Colors", "Themes", "Lock Screen"]
     },
-    "Apps": {
+    apps: {
+        name: "Apps",
         cards: ["Installed Apps", "Default Apps", "Startup"]
     },
-    "Accounts": {
+    accounts: {
+        name: "Accounts",
         cards: ["Your Info", "Sign-in Options", "Family"]
     },
-    "Time & Language": {
+    time: {
+        name: "Time & Language",
         cards: ["Date & Time", "Language", "Typing"]
     }
 };
 
-/* ─────────────────────────────
+
+/* =========================================================
    RENDER SIDEBAR
-──────────────────────────────*/
+========================================================= */
+
 const sidebar = document.getElementById("sidebar");
 const content = document.getElementById("content");
 
-Object.keys(pages).forEach((name, i) => {
-    let li = document.createElement("li");
-    li.innerText = name;
-    if (i === 0) li.classList.add("active");
+Object.entries(pages).forEach(([key, page], index) => {
+    const li = document.createElement("li");
+    li.innerText = page.name;
+    li.dataset.page = key;
 
-    li.addEventListener("click", () => loadCategory(name));
+    if (index === 0) li.classList.add("active");
+
+    li.addEventListener("click", () => loadCategory(key));
     sidebar.appendChild(li);
 });
 
-/* ─────────────────────────────
-   LOAD CATEGORY PAGE
-──────────────────────────────*/
-function loadCategory(category) {
-    fadeContent(() => {
-        // switch active tab
-        document.querySelectorAll(".sidebar li").forEach(li => li.classList.remove("active"));
-        [...sidebar.children].find(li => li.innerText === category).classList.add("active");
 
-        // render the card grid
-        const cards = pages[category].cards;
-        content.innerHTML = `
-            <h1>${category}</h1>
-            <div class="card-grid">
-                ${cards.map(c => `<div class="card" onclick="openSubPage('${category}', '${c}')">${c}</div>`).join("")}
-            </div>
-        `;
-    });
-}
+/* =========================================================
+   PAGE LOADER WRAPPER (fade animation)
+========================================================= */
 
-/* ─────────────────────────────
-   OPEN SUB PAGE
-──────────────────────────────*/
-function openSubPage(category, card) {
-    fadeContent(() => {
-        content.innerHTML = `
-            <div class="sub-page">
-                <div class="back-btn" onclick="loadCategory('${category}')">← Back</div>
-                <h1>${card}</h1>
-                <p>This is the <b>${card}</b> settings page.  
-                Add controls, switches, sliders, and UI here.</p>
-            </div>
-        `;
-    });
-}
-
-/* ─────────────────────────────
-   ANIMATION WRAPPER
-──────────────────────────────*/
 function fadeContent(callback) {
     content.classList.add("fade-out");
 
@@ -84,11 +65,64 @@ function fadeContent(callback) {
         content.classList.remove("fade-out");
         content.classList.add("fade-in");
 
-        setTimeout(() => content.classList.remove("fade-in"), 200);
-    }, 200);
+        setTimeout(() => content.classList.remove("fade-in"), 180);
+    }, 180);
 }
 
-/* ─────────────────────────────
-   LOAD FIRST PAGE
-──────────────────────────────*/
-loadCategory("System");
+
+/* =========================================================
+   LOAD CATEGORY PAGE
+========================================================= */
+
+function loadCategory(key) {
+    const page = pages[key];
+    if (!page) return;
+
+    fadeContent(() => {
+        // update active state
+        document.querySelectorAll(".sidebar li").forEach(li => {
+            li.classList.toggle("active", li.dataset.page === key);
+        });
+
+        // cards
+        content.innerHTML = `
+            <h1>${page.name}</h1>
+            <div class="card-grid">
+                ${page.cards
+                    .map(card => `
+                        <div class="card" onclick="openSubPage('${key}', '${card}')">
+                            ${card}
+                        </div>
+                    `)
+                    .join("")}
+            </div>
+        `;
+    });
+}
+
+
+/* =========================================================
+   OPEN SUBPAGE
+========================================================= */
+
+function openSubPage(categoryKey, cardName) {
+    fadeContent(() => {
+        content.innerHTML = `
+            <div class="sub-page">
+                <div class="back-btn" onclick="loadCategory('${categoryKey}')">← Back</div>
+                <h1>${cardName}</h1>
+
+                <p>
+                    This is the <b>${cardName}</b> settings page.<br>
+                    Add controls, switches, UI components, etc.
+                </p>
+            </div>
+        `;
+    });
+}
+
+
+/* =========================================================
+   INITIAL LOAD
+========================================================= */
+loadCategory("system");
