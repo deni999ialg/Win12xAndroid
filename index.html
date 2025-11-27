@@ -3,73 +3,127 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Windows 10 Loading</title>
+  <title>Windows 12 Loading</title>
   <style>
     html, body {
       height: 100%;
       margin: 0;
-      background: #000;
-      font-family: Segoe UI, sans-serif;
+      background: #101824;
+      font-family: Segoe UI, Inter, Arial, sans-serif;
       display: flex;
       align-items: center;
       justify-content: center;
-      color: #fff;
+      color: #e6eef8;
       user-select: none;
     }
-
-    /* Spinner dots */
+    .loader-wrap {
+      display: flex; flex-direction: column; align-items:center;
+      gap: 24px; padding: 32px 42px; border-radius:15px;background:rgba(255,255,255,0.04);box-shadow:0 6px 40px rgba(3,7,12,0.12);
+    }
     .spinner {
       display: flex;
       gap: 10px;
+      margin-bottom: 12px;
     }
-
     .dot {
-      width: 12px;
-      height: 12px;
-      background: #ffffff;
+      width: 15px;
+      height: 15px;
+      background: #0063f7;
       border-radius: 50%;
-      opacity: 0.25;
+      opacity: 0.17;
       animation: blink 1.2s infinite ease-in-out;
     }
-
     .dot:nth-child(1) { animation-delay: 0s; }
     .dot:nth-child(2) { animation-delay: 0.15s; }
     .dot:nth-child(3) { animation-delay: 0.3s; }
     .dot:nth-child(4) { animation-delay: 0.45s; }
-
     @keyframes blink {
-      0% { opacity: 0.25; transform: scale(1); }
+      0% { opacity: 0.17; transform: scale(1); }
       50% { opacity: 1; transform: scale(1.4); }
-      100% { opacity: 0.25; transform: scale(1); }
+      100% { opacity: 0.17; transform: scale(1); }
     }
-
+    .progress-bar-bg {
+      width: 200px; height:12px; border-radius:6px;background:#223044;overflow:hidden;margin-bottom:10px;
+    }
+    .progress-bar-value {
+      height:100%;background:linear-gradient(90deg,#0063f7,#3ad2ff);width:0%;transition:width 0.8s cubic-bezier(.45,.02,.56,.96);border-radius:6px;
+    }
     .text {
-      margin-top: 24px;
       text-align: center;
-      opacity: 0.8;
+      opacity: 0.85;
       font-size: 18px;
+      margin-bottom: 8px;
     }
+    .system-tip {
+      color: #56d6aa;
+      font-size: 14px;
+      margin-bottom: 10px;
+    }
+    .version {
+      opacity:0.5;font-size:12px;margin-top:6px;
+    }
+    .theme-choose {margin-top:10px;}
+    .theme-choose label {
+      font-size:13px;color:#67b0ff;
+      margin-right:7px;
+    }
+    .theme-choose select {border-radius:7px;padding:3px 12px;}
   </style>
 </head>
 <body>
-
-  <div>
+  <div class="loader-wrap" aria-label="Loading Screen">
     <div class="spinner">
       <div class="dot"></div>
       <div class="dot"></div>
       <div class="dot"></div>
       <div class="dot"></div>
     </div>
-    <div class="text">Loading...</div>
+    <div class="progress-bar-bg"><div class="progress-bar-value" id="progressBar"></div></div>
+    <div class="text">Loading Desktop Environment...</div>
+    <div class="system-tip" id="systemTip">Tip: Press Ctrl+L to lock your desktop at any time.</div>
+    <div class="theme-choose">
+      <label for="themeSel">Theme:</label>
+      <select id="themeSel">
+        <option value="dark">Dark</option>
+        <option value="light">Light</option>
+      </select>
+    </div>
+    <div class="version">Win12xAndroid v1.1.0</div>
   </div>
-
   <script>
-    // Simulated loading completion
-    // When done, replace loading screen with your actual content
-    setTimeout(() => {
-      window.location.href = "desktop.html";
-    }, 4000); // change time if you want faster/slower
-  </script>
+    // Progress bar logic
+    let progress = 0;
+    let interval = setInterval(()=>{
+      if(progress < 93) progress += Math.random()*4+1;
+      document.getElementById('progressBar').style.width = Math.min(progress,100) + '%';
+    }, 550);
 
+    // Simulated theme picker: store in localStorage, apply to desktop.html
+    const themeSel = document.getElementById('themeSel');
+    themeSel.onchange = () => {
+      localStorage.setItem('win12xandroid_theme', themeSel.value);
+    };
+
+    // Desktop will read theme from localStorage
+    setTimeout(() => {
+      clearInterval(interval);
+      document.getElementById('progressBar').style.width = '100%';
+      // Pass chosen theme via localStorage, then redirect
+      window.location.href = "desktop.html";
+    }, 4100);
+
+    // Dynamic tip rotation
+    const tips = [
+      "Tip: Press Ctrl+L anytime to lock your desktop.",
+      "Did you know? You can change wallpapers in the Start menu.",
+      "Try switching to light mode for a new look!",
+      "Right click an icon for more options (coming soon)."
+    ];
+    let t=0;
+    setInterval(() => {
+      t=(t+1)%tips.length;
+      document.getElementById('systemTip').textContent = tips[t];
+    }, 1890);
+  </script>
 </body>
 </html>
