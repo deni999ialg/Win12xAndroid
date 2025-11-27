@@ -248,11 +248,11 @@
 		function openApp(name){
 			let src='';
 			let title=name;
-			if(name==='explorer'){ src='../Media/Apps/WinExplorer.html'; title='Win Explorer' }
-			if(name==='settings'){ src='../Media/Apps/WinSettings.html'; title='Settings' }
+			if(name==='explorer'){ src='Media/Apps/WinExplorer.html'; title='Win Explorer' }
+			if(name==='settings'){ src='Media/Apps/WinSettings.html'; title='Settings' }
 			if(name==='store'){ src='#'; title='Store' }
 			if(name==='notepad'){src='https://notepad.js.org/'; title='Notepad'}
-			if(name==='browser'){src='https://www.mozilla.org/en-US/firefox/new/'; title='Web Browser'}
+			if(name==='browser'){src='https://www.duckduckgo.com'; title='Web Browser'}
 			if(name==='trash'){src=''; title='Recycle Bin (Empty)'}
 			appFrame.src = src;
 			winTitle.textContent = title;
