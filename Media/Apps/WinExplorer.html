@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Windows 12 File Explorer</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+    body {
+        margin: 0;
+        background: #f1f1f1;
+        font-family: Segoe UI, sans-serif;
+    }
+
+    .titlebar {
+        background: #ffffffcc;
+        backdrop-filter: blur(10px);
+        padding: 10px 15px;
+        font-size: 20px;
+        font-weight: bold;
+        display: flex;
+        align-items: center;
+        border-bottom: 1px solid #ccc;
+    }
+
+    .explorer {
+        display: grid;
+        grid-template-columns: 250px auto;
+        height: calc(100vh - 52px);
+    }
+
+    /* Sidebar */
+    .sidebar {
+        background: #fafafa;
+        border-right: 1px solid #d0d0d0;
+        padding: 15px;
+    }
+
+    .sidebar h3 {
+        margin-top: 25px;
+        margin-bottom: 10px;
+        font-size: 14px;
+        text-transform: uppercase;
+        color: #555;
+    }
+
+    .nav-item {
+        padding: 8px 10px;
+        cursor: pointer;
+        border-radius: 6px;
+    }
+
+    .nav-item:hover {
+        background: #e0e0e0;
+    }
+
+    /* Main Area */
+    .main {
+        padding: 20px;
+    }
+
+    .pathbar {
+        background: #fff;
+        padding: 10px 15px;
+        border-radius: 8px;
+        border: 1px solid #ccc;
+        margin-bottom: 15px;
+    }
+
+    .file-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, 120px);
+        gap: 20px;
+    }
+
+    .file {
+        width: 120px;
+        height: 120px;
+        background: #ffffffdd;
+        border: 1px solid #ccc;
+        border-radius: 10px;
+        padding: 10px;
+        text-align: center;
+        backdrop-filter: blur(8px);
+        cursor: pointer;
+        transition: 0.2s;
+    }
+
+    .file:hover {
+        background: #e6e6e6;
+        transform: scale(1.03);
+    }
+
+    .file img {
+        width: 48px;
+        height: 48px;
+        margin-bottom: 6px;
+    }
+</style>
+</head>
+<body>
+
+<div class="titlebar">File Explorer</div>
+
+<div class="explorer">
+    <div class="sidebar">
+        <h3>Quick Access</h3>
+        <div class="nav-item">Desktop</div>
+        <div class="nav-item">Downloads</div>
+        <div class="nav-item">Pictures</div>
+        <div class="nav-item">Documents</div>
+
+        <h3>Devices</h3>
+        <div class="nav-item">This PC</div>
+        <div class="nav-item">Local Disk (C:)</div>
+        <div class="nav-item">USB Drive (D:)</div>
+    </div>
+
+    <div class="main">
+        <div class="pathbar">This PC &gt; Desktop</div>
+
+        <div class="file-grid" id="fileGrid">
+            <!-- Files inserted with JS -->
+        </div>
+    </div>
+</div>
+
+<script>
+    const files = [
+        { name: "Photos", icon: "📁" },
+        { name: "Music", icon: "📁" },
+        { name: "Games", icon: "📁" },
+        { name: "Notes.txt", icon: "📄" },
+        { name: "Setup.exe", icon: "💾" },
+        { name: "Image.png", icon: "🖼️" }
+    ];
+
+    const grid = document.getElementById("fileGrid");
+
+    files.forEach(f => {
+        let div = document.createElement("div");
+        div.className = "file";
+        div.innerHTML = `
+            <div style="font-size:40px;margin-bottom:4px;">${f.icon}</div>
+            <div>${f.name}</div>
+        `;
+        grid.appendChild(div);
+    });
+</script>
+
+</body>
+</html>
