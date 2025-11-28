@@ -1,26 +1,39 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
 <meta charset="UTF-8">
 <title>Windows 12 File Explorer</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 
 <style>
     body {
         margin: 0;
-        background: #f1f1f1;
         font-family: Segoe UI, sans-serif;
+        background: #f3f3f3;
     }
 
     .titlebar {
         background: #ffffffcc;
         backdrop-filter: blur(10px);
-        padding: 10px 15px;
+        padding: 12px 18px;
         font-size: 20px;
         font-weight: bold;
-        display: flex;
-        align-items: center;
         border-bottom: 1px solid #ccc;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    #searchBox {
+        padding: 7px 12px;
+        width: 220px;
+        border-radius: 8px;
+        border: 1px solid #bbb;
+        font-size: 14px;
+    }
+    #searchBox:focus {
+        outline: none;
+        border-color: #888;
     }
 
     .explorer {
@@ -32,39 +45,50 @@
     /* Sidebar */
     .sidebar {
         background: #fafafa;
-        border-right: 1px solid #d0d0d0;
+        border-right: 1px solid #ccc;
         padding: 15px;
+        overflow-y: auto;
     }
-
     .sidebar h3 {
         margin-top: 25px;
         margin-bottom: 10px;
         font-size: 14px;
         text-transform: uppercase;
-        color: #555;
+        color: #666;
     }
-
     .nav-item {
-        padding: 8px 10px;
-        cursor: pointer;
+        padding: 8px;
         border-radius: 6px;
+        cursor: pointer;
     }
-
     .nav-item:hover {
-        background: #e0e0e0;
+        background: #e4e4e4;
     }
 
     /* Main Area */
     .main {
         padding: 20px;
+        overflow-y: auto;
     }
 
     .pathbar {
         background: #fff;
         padding: 10px 15px;
-        border-radius: 8px;
         border: 1px solid #ccc;
+        border-radius: 8px;
         margin-bottom: 15px;
+        display: flex;
+        justify-content: space-between;
+    }
+    .pathbtn {
+        cursor: pointer;
+        padding: 5px 10px;
+        background: #e9e9e9;
+        border-radius: 5px;
+        margin-right: 5px;
+    }
+    .pathbtn:hover {
+        background: #d5d5d5;
     }
 
     .file-grid {
@@ -76,76 +100,204 @@
     .file {
         width: 120px;
         height: 120px;
-        background: #ffffffdd;
+        background: #ffffffee;
         border: 1px solid #ccc;
         border-radius: 10px;
-        padding: 10px;
         text-align: center;
-        backdrop-filter: blur(8px);
+        padding: 10px;
         cursor: pointer;
         transition: 0.2s;
     }
-
     .file:hover {
-        background: #e6e6e6;
+        background: #e0e0e0;
         transform: scale(1.03);
     }
 
-    .file img {
-        width: 48px;
-        height: 48px;
-        margin-bottom: 6px;
+    .file-icon {
+        font-size: 42px;
+        margin-bottom: 5px;
+    }
+
+    .highlight {
+        background: #fffa9c !important;
     }
 </style>
 </head>
 <body>
 
-<div class="titlebar">File Explorer</div>
+<div class="titlebar">
+    File Explorer
+    <input type="text" id="searchBox" placeholder="Search…" oninput="searchFiles()">
+</div>
 
 <div class="explorer">
     <div class="sidebar">
         <h3>Quick Access</h3>
-        <div class="nav-item">Desktop</div>
-        <div class="nav-item">Downloads</div>
-        <div class="nav-item">Pictures</div>
-        <div class="nav-item">Documents</div>
+        <div class="nav-item" onclick="openPath(['Desktop'])">Desktop</div>
+        <div class="nav-item" onclick="openPath(['Downloads'])">Downloads</div>
+        <div class="nav-item" onclick="openPath(['Pictures'])">Pictures</div>
+        <div class="nav-item" onclick="openPath(['Documents'])">Documents</div>
 
-        <h3>Devices</h3>
-        <div class="nav-item">This PC</div>
-        <div class="nav-item">Local Disk (C:)</div>
-        <div class="nav-item">USB Drive (D:)</div>
+        <h3>This PC</h3>
+        <div class="nav-item" onclick="openPath(['This PC'])">This PC</div>
+        <div class="nav-item" onclick="openPath(['This PC','Local Disk (C:)'])">Local Disk (C:)</div>
     </div>
 
     <div class="main">
-        <div class="pathbar">This PC &gt; Desktop</div>
-
-        <div class="file-grid" id="fileGrid">
-            <!-- Files inserted with JS -->
+        <div class="pathbar">
+            <div id="pathButtons"></div>
+            <div class="pathbtn" onclick="goBack()">⬅ Back</div>
         </div>
+
+        <div class="file-grid" id="fileGrid"></div>
     </div>
 </div>
 
 <script>
-    const files = [
-        { name: "Photos", icon: "📁" },
-        { name: "Music", icon: "📁" },
-        { name: "Games", icon: "📁" },
-        { name: "Notes.txt", icon: "📄" },
-        { name: "Setup.exe", icon: "💾" },
-        { name: "Image.png", icon: "🖼️" }
-    ];
+/* ---------------- FILE SYSTEM SIMULATION ---------------- */
+const FS = {
+    "Desktop": {
+        type: "folder",
+        children: {
+            "Games": { type: "folder", children: { "Minecraft.txt": {type:"file"}, "Roblox.lua": {type:"file"} } },
+            "Notes.txt": { type: "file" }
+        }
+    },
+    "Downloads": {
+        type: "folder",
+        children: { "Setup.exe": { type: "file" }, "Wallpaper.png": { type:"file"} }
+    },
+    "Pictures": {
+        type: "folder",
+        children: {
+            "Holiday": { type:"folder", children:{ "beach.jpg":{type:"file"} } },
+            "Family.png": { type:"file" }
+        }
+    },
+    "Documents": {
+        type: "folder",
+        children: { "School": { type:"folder", children:{ "math.pdf":{type:"file"} } } }
+    },
+    "This PC": {
+        type: "folder",
+        children: {
+            "Local Disk (C:)": {
+                type:"folder",
+                children: {
+                    "Windows": { type:"folder", children:{} },
+                    "Users": { type:"folder", children:{} },
+                    "Program Files": { type:"folder", children:{} }
+                }
+            }
+        }
+    }
+};
+
+/* ---------------- NAVIGATION SYSTEM ---------------- */
+let currentPath = ["Desktop"];
+let historyStack = [];
+
+function getFolder(pathArray) {
+    let obj = FS;
+    for (let p of pathArray) obj = obj[p].children;
+    return obj;
+}
+
+function openPath(path) {
+    historyStack.push([...currentPath]);
+    currentPath = [...path];
+    document.getElementById("searchBox").value = "";
+    render();
+}
+
+function openItem(name) {
+    const folder = getFolder(currentPath);
+    const item = folder[name];
+
+    if (item.type === "folder") {
+        currentPath.push(name);
+        document.getElementById("searchBox").value = "";
+        render();
+    } else {
+        alert("Opened file: " + name);
+    }
+}
+
+function goBack() {
+    if (historyStack.length > 0) {
+        currentPath = historyStack.pop();
+        render();
+    }
+}
+
+/* ---------------- SEARCH ---------------- */
+function searchFiles() {
+    const q = document.getElementById("searchBox").value.toLowerCase();
+    const grid = document.getElementById("fileGrid");
+    grid.innerHTML = "";
+
+    const folder = getFolder(currentPath);
+
+    Object.keys(folder).forEach(name => {
+        const item = folder[name];
+        const matches = name.toLowerCase().includes(q);
+
+        if (q === "" || matches) {
+            let div = document.createElement("div");
+            div.className = "file" + (matches && q !== "" ? " highlight" : "");
+            div.onclick = () => openItem(name);
+
+            div.innerHTML = `
+                <div class="file-icon">${item.type === "folder" ? "📁" : "📄"}</div>
+                <div>${name}</div>
+            `;
+
+            grid.appendChild(div);
+        }
+    });
+}
+
+/* ---------------- RENDER ---------------- */
+function render() {
+    renderPathButtons();
 
     const grid = document.getElementById("fileGrid");
+    grid.innerHTML = "";
 
-    files.forEach(f => {
+    const folder = getFolder(currentPath);
+
+    Object.keys(folder).forEach(name => {
+        let f = folder[name];
         let div = document.createElement("div");
         div.className = "file";
+        div.onclick = () => openItem(name);
+
         div.innerHTML = `
-            <div style="font-size:40px;margin-bottom:4px;">${f.icon}</div>
-            <div>${f.name}</div>
+            <div class="file-icon">${f.type === "folder" ? "📁" : "📄"}</div>
+            <div>${name}</div>
         `;
         grid.appendChild(div);
     });
+}
+
+function renderPathButtons() {
+    const container = document.getElementById("pathButtons");
+    container.innerHTML = "";
+
+    let full = [];
+
+    currentPath.forEach((p, i) => {
+        full.push(p);
+        const btn = document.createElement("span");
+        btn.className = "pathbtn";
+        btn.innerHTML = p;
+        btn.onclick = () => openPath(full.slice(0, i + 1));
+        container.appendChild(btn);
+    });
+}
+
+/* Start */
+render();
 </script>
 
 </body>
