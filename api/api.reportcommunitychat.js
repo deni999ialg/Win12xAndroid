@@ -26,7 +26,7 @@ const db = getFirestore(app);
  * @param {string} messageId - The ID of the message being reported
  * @param {string} reporter - The user reporting
  * @param {string} reason - Reason for reporting
- */
+ **/
 async function reportMessage(chatRoom, messageId, reporter, reason) {
   try {
     const docRef = await addDoc(collection(db, `chats/${chatRoom}/reports`), {
